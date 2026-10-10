@@ -1,0 +1,422 @@
+<title>Runner Tips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+/* Layout: grocery-app feel. Red header band, top-3 podium cards, "share a tip" prompt, filterable list, round + button */
+:root {
+  --bg: #F4F4F4;
+  --surface: #FFFFFF;
+  --ink: #1C1C1C;
+  --muted: #6B6B6B;
+  --line: #E4E4E4;
+  --red: #E60000;
+  --red-dark: #B80000;
+  --red-soft: #FFE9E7;
+  --on-red: #FFFFFF;
+  --note: #FFF6DB;
+  --font: "Nunito", "Arial Rounded MT Bold", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121212; --surface: #1E1E1E; --ink: #F2F2F2; --muted: #A3A3A3; --line: #2E2E2E;
+    --red: #F0241D; --red-dark: #C81710; --red-soft: #3A1715; --on-red: #FFFFFF; --note: #2E2914;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121212; --surface: #1E1E1E; --ink: #F2F2F2; --muted: #A3A3A3; --line: #2E2E2E;
+  --red: #F0241D; --red-dark: #C81710; --red-soft: #3A1715; --on-red: #FFFFFF; --note: #2E2914;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body { color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; font-weight: 500; }
+
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--red); color: var(--on-red); }
+.hwrap { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: grid; gap: 0; min-width: 0; }
+h1 { margin: 0; font-size: 24px; font-weight: 900; line-height: 1.1; letter-spacing: -0.01em; }
+.hub { font-size: 13px; opacity: 0.9; font-weight: 700; }
+.lang { display: flex; background: rgba(255,255,255,0.18); border-radius: 99px; padding: 3px; flex: none; }
+.lang button { font: 800 13px/1 var(--font); border: 0; border-radius: 99px; padding: 7px 10px; background: transparent; color: var(--on-red); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--on-red); color: var(--red); }
+
+.wrap { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 14px 110px; display: grid; gap: 22px; }
+.demo { font-size: 13px; color: var(--muted); background: var(--note); border-radius: 12px; padding: 10px 14px; }
+
+h2 { margin: 0; font-size: 21px; font-weight: 900; line-height: 1.2; text-wrap: balance; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+section { display: grid; gap: 12px; min-width: 0; }
+
+.list { display: grid; gap: 12px; }
+.tip { background: var(--surface); border-radius: 16px; padding: 16px 16px 12px; display: grid; gap: 8px; min-width: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.tip.fresh { outline: 2px solid var(--red); }
+.top .tip { padding-top: 14px; }
+.toprow { display: flex; gap: 12px; align-items: center; }
+.rank { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--red); color: var(--on-red); font: 900 18px/36px var(--font); text-align: center; font-variant-numeric: tabular-nums; }
+.meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); font-weight: 700; }
+.cat { color: var(--red); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 900; }
+.tag { font-size: 11px; font-weight: 800; border-radius: 6px; padding: 1px 7px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.tip h3 { margin: 0; font-size: 17px; font-weight: 900; line-height: 1.3; text-wrap: balance; }
+.tip p { margin: 0; overflow-wrap: anywhere; }
+.photo { width: 100%; max-height: 320px; object-fit: cover; border-radius: 12px; display: block; }
+.by { font-size: 13px; color: var(--muted); font-weight: 700; }
+.actions { display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--line); padding-top: 10px; }
+.handy { font: 800 14px/1 var(--font); border-radius: 99px; padding: 9px 14px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; border: 2px solid var(--red); background: transparent; color: var(--red); }
+.handy[aria-pressed="true"] { background: var(--red); color: var(--on-red); }
+.handy svg { width: 16px; height: 16px; }
+.handy .n { font-variant-numeric: tabular-nums; }
+.cbtn { font: 800 14px/1 var(--font); border: 0; background: transparent; color: var(--muted); padding: 9px 8px; cursor: pointer; }
+.comments { display: grid; gap: 8px; }
+.comment { font-size: 14px; background: var(--bg); border-radius: 12px; padding: 8px 12px; }
+.comment b { font-size: 13px; font-weight: 900; }
+.cform { display: flex; gap: 6px; }
+.cform input { flex: 1; min-width: 0; }
+
+.cta { background: var(--red); color: var(--on-red); border-radius: 18px; padding: 20px; display: grid; gap: 10px; }
+.cta h2 { color: var(--on-red); }
+.cta p { margin: 0; opacity: 0.95; }
+.cta button { justify-self: start; font: 900 16px/1 var(--font); border: 0; border-radius: 99px; padding: 13px 20px; background: var(--on-red); color: var(--red); cursor: pointer; }
+
+.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.chip { flex: none; font: 800 13px/1 var(--font); padding: 9px 13px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.sortrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 700; }
+.sortrow select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+
+input, textarea, select { font: inherit; color: var(--ink); }
+.field input, .field textarea, .field select, .cform input { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
+.cform input { width: auto; }
+.btn { font: 900 15px/1 var(--font); border: 0; border-radius: 99px; padding: 12px 18px; background: var(--red); color: var(--on-red); cursor: pointer; }
+.cform .btn { padding: 10px 14px; font-size: 14px; }
+.ghost { font: 800 15px/1 var(--font); border: 1px solid var(--line); border-radius: 99px; padding: 12px 18px; background: transparent; color: var(--ink); cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, label.photo-pick:focus-within { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.rules { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+.rules h4 { font-size: 14px; font-weight: 900; color: var(--ink); margin: 0 0 6px; }
+.rules ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+.fab { position: fixed; right: max(16px, calc(50% - 304px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 6; width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--red); color: var(--on-red); font: 900 30px/58px var(--font); cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--surface); width: 100%; max-width: 640px; border-radius: 20px 20px 0 0; padding: 20px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; max-height: 92vh; overflow-y: auto; }
+.sheet h2 { font-size: 22px; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 13px; font-weight: 900; }
+.field small { color: var(--muted); font-size: 12px; }
+.photo-pick { display: flex; align-items: center; gap: 10px; border: 2px dashed var(--line); border-radius: 12px; padding: 12px; cursor: pointer; color: var(--muted); font-weight: 800; font-size: 14px; }
+.photo-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.photo-pick svg { width: 22px; height: 22px; flex: none; color: var(--red); }
+.preview { display: grid; gap: 6px; }
+.preview img { border-radius: 12px; max-height: 200px; object-fit: cover; width: 100%; }
+.preview button { justify-self: start; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); font-weight: 700; }
+.check input { margin-top: 3px; accent-color: var(--red); }
+.row { display: flex; gap: 8px; justify-content: flex-end; }
+.err { color: var(--red); font-size: 13px; font-weight: 800; min-height: 1em; }
+.toast { position: fixed; left: 50%; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); font-weight: 800; padding: 10px 18px; border-radius: 99px; z-index: 20; font-size: 14px; white-space: nowrap; }
+.empty { color: var(--muted); text-align: center; padding: 20px 0; }
+@media (prefers-reduced-motion: no-preference) { .tip.fresh { animation: pop .35s ease-out; } @keyframes pop { from { transform: scale(.98); } to { transform: none; } } }
+</style>
+
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <h1>Runner Tips</h1>
+      <div class="hub" id="t-hub"></div>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="l-nl" aria-pressed="true">NL</button>
+      <button id="l-en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="demo" id="t-demo"></div>
+
+  <section class="top" aria-labelledby="h-top">
+    <div><h2 id="h-top"></h2><p class="sub" id="t-topsub"></p></div>
+    <div class="list" id="top"></div>
+  </section>
+
+  <div class="cta">
+    <h2 id="t-ctah"></h2>
+    <p id="t-ctap"></p>
+    <button id="cta-btn"></button>
+  </div>
+
+  <section aria-labelledby="h-all">
+    <h2 id="h-all"></h2>
+    <div class="filters" id="filters" role="group" aria-label="Category"></div>
+    <div class="sortrow"><span id="count"></span>
+      <label><span id="t-sort"></span> <select id="sort"></select></label></div>
+    <div class="list" id="all"></div>
+  </section>
+
+  <section class="rules">
+    <h4 id="t-rulesh"></h4>
+    <ul id="rules"></ul>
+  </section>
+</div>
+
+<button class="fab" id="fab" aria-label="Share a tip">+</button>
+
+<script>
+const T = {
+  nl: {
+    hub: "Jouw hub · door runners, voor runners",
+    demo: "Demoversie. Tips met het label \"Voorbeeld\" zijn invullers die je vervangt door echte tips. Wat je hier toevoegt of liket, blijft alleen op je eigen telefoon.",
+    top: "Top 3 tips van nu", topsub: "De tips die collega's het handigst vinden. Nieuw? Begin hier.",
+    ctah: "Heb jij een slimme truc?", ctap: "Iets waardoor jouw shift makkelijker gaat? Deel het. Het kost een halve minuut en scheelt een nieuwe collega weken uitzoeken.",
+    ctab: "Deel een tip", all: "Alle tips", allcat: "Alles", sort: "Sorteer", handy: "Handigst", newest: "Nieuwst",
+    tips: n => n + (n === 1 ? " tip" : " tips"),
+    handyBtn: "Handig", comment: "Reageer", comments: n => n + (n === 1 ? " reactie" : " reacties"),
+    addc: "Schrijf een reactie of je eigen variant", post: "Plaats", by: "door ", anon: "Anoniem", you: "Jij",
+    example: "Voorbeeld", yours: "Van jou", empty: "Nog geen tips hier. Deel de eerste!",
+    rulesh: "Huisregels",
+    rules: ["Geen namen of adressen van klanten, en niets wat naar een klant te herleiden is.", "Tips vervangen nooit de officiële regels of veiligheidsinstructies. Botst het, dan geldt de officiële regel.", "Houd het vriendelijk. Moderators kunnen tips verwijderen."],
+    sheeth: "Deel een tip", fcat: "Categorie", ftitle: "Korte titel", ftitleph: "Bijv. deksels laag in het frame",
+    fbody: "Jouw tip", fbodyph: "Wat doe je, en waarom helpt het?", fbodyhint: "Een of twee zinnen is perfect.",
+    fphoto: "Foto (optioneel)", fphotopick: "Voeg een foto toe", fphotohint: "Geen klanten, huisnummers of kentekens in beeld.", fphotodel: "Foto verwijderen",
+    fname: "Je naam (optioneel)", fnameph: "Leeg laten = anoniem", fok: "Geen klantgegevens, en niets wat tegen de officiële regels ingaat.",
+    cancel: "Annuleer", posttip: "Plaats tip", errfill: "Vul een titel en de tip zelf in.", errok: "Vink het vakje aan om de huisregels te bevestigen.",
+    tposted: "Tip geplaatst", cposted: "Reactie geplaatst", tphotomem: "Tip geplaatst. De foto blijft alleen tot je de pagina sluit.",
+    ago: d => d === 0 ? "vandaag" : d === 1 ? "gisteren" : d < 7 ? d + " dagen geleden" : Math.floor(d / 7) + (d < 14 ? " week geleden" : " weken geleden")
+  },
+  en: {
+    hub: "Your hub · by runners, for runners",
+    demo: "Demo version. Tips labelled \"Example\" are placeholders to swap for real ones. What you add or like here stays on your own phone.",
+    top: "Top 3 tips right now", topsub: "The tips colleagues find most handy. New here? Start with these.",
+    ctah: "Got a smart trick?", ctap: "Something that makes your shift easier? Share it. It takes half a minute and saves a new colleague weeks of figuring it out.",
+    ctab: "Share a tip", all: "All tips", allcat: "All", sort: "Sort", handy: "Most handy", newest: "Newest",
+    tips: n => n + (n === 1 ? " tip" : " tips"),
+    handyBtn: "Handy", comment: "Comment", comments: n => n + (n === 1 ? " comment" : " comments"),
+    addc: "Add a comment or your own twist", post: "Post", by: "by ", anon: "Anonymous", you: "You",
+    example: "Example", yours: "Yours", empty: "No tips here yet. Share the first one!",
+    rulesh: "House rules",
+    rules: ["No customer names, addresses or anything that points to a customer.", "Tips never replace official rules or safety instructions. If they clash, the official rule wins.", "Keep it friendly. Moderators can remove tips."],
+    sheeth: "Share a tip", fcat: "Category", ftitle: "Short title", ftitleph: "E.g. keep the lids low in the frame",
+    fbody: "Your tip", fbodyph: "What do you do, and why does it help?", fbodyhint: "One or two sentences is perfect.",
+    fphoto: "Photo (optional)", fphotopick: "Add a photo", fphotohint: "No customers, house numbers or licence plates in the picture.", fphotodel: "Remove photo",
+    fname: "Your name (optional)", fnameph: "Leave empty to post anonymously", fok: "No customer info, and nothing that goes against the official rules.",
+    cancel: "Cancel", posttip: "Post tip", errfill: "Add a title and the tip itself.", errok: "Tick the box to confirm the house rules.",
+    tposted: "Tip posted", cposted: "Comment posted", tphotomem: "Tip posted. The photo is only kept until you close the page.",
+    ago: d => d === 0 ? "today" : d === 1 ? "yesterday" : d < 7 ? d + " days ago" : Math.floor(d / 7) + (d < 14 ? " week ago" : " weeks ago")
+  }
+};
+
+const CATS = {
+  crates: { nl: "Kratten & deksels", en: "Crates & lids" },
+  van:    { nl: "In de wagen", en: "In the van" },
+  weather:{ nl: "Weer", en: "Weather" },
+  stairs: { nl: "Trappen & gebouwen", en: "Stairs & buildings" },
+  cust:   { nl: "Klanten", en: "Customers" },
+  returns:{ nl: "Retour & statiegeld", en: "Returns & deposits" },
+  body:   { nl: "Je lichaam", en: "Your body" },
+  new:    { nl: "Nieuwe runners", en: "New runners" }
+};
+
+const SEED = [
+  { id: "s1", cat: "crates", by: "Marco", votes: 23, example: false, days: 2,
+    nl: ["Ijspakkenkrat en deksels laag in het frame", "Zet de extra krat voor de ijspakken en de deksels laag in het frame zodra je de kans hebt. Dan hoef je niet elke keer omhoog te reiken om ze terug te zetten."],
+    en: ["Keep the ice-pack crate and lids low in the frame", "Whenever you get the chance, put the extra crate for the ice packs and the lids low in the frame. Then you don't have to reach up every time you put them back."], comments: [] },
+  { id: "s2", cat: "weather", by: "Marco", votes: 31, example: false, days: 1,
+    nl: ["Gratis koud drinken op warme dagen", "Leg je waterfles op een warme dag bij de ijspakken in een koude krat. Een halfuur later heb je een koud drankje onder het werk."],
+    en: ["Free cold drink on hot days", "On a hot day, put your water bottle in a cold crate with the ice packs. Half an hour later you have a cold drink while you work."], comments: [] },
+  { id: "s3", cat: "crates", by: null, votes: 19, example: true, days: 5,
+    nl: ["Kijk naar de kilo's voordat je tilt", "Als je bij een stop aankomt, laat de app zien hoeveel kilo het is. Is het zwaar, plan dan meteen twee keer lopen in plaats van alles in één keer."],
+    en: ["Check the kilos before you lift", "When you arrive at a stop, the app shows how many kilos it is. If it's heavy, plan two trips right away instead of carrying it all at once."], comments: [] },
+  { id: "s4", cat: "stairs", by: null, votes: 21, example: true, days: 9,
+    nl: ["Liever een keer extra lopen dan een keer te zwaar", "Neem op trappen iets minder mee en houd een hand vrij voor de leuning. Een extra rondje kost een minuut, een val of een kapotte rug kost weken."],
+    en: ["One extra trip beats one heavy trip", "On stairs, carry a bit less and keep a hand free for the railing. An extra trip costs a minute; a fall or a bad back costs weeks."], comments: [] },
+  { id: "s5", cat: "cust", by: null, votes: 12, example: true, days: 4,
+    nl: ["Zeg het meteen als er iets ontbreekt", "Mist er iets of is er iets vervangen? Zeg het de klant meteen aan de deur. Niemand ontdekt het graag later, en het scheelt klachten."],
+    en: ["Say what's missing at the door", "If something is missing or swapped, tell the customer right away at the door. Nobody likes finding out later, and it saves complaints."], comments: [] },
+  { id: "s6", cat: "returns", by: null, votes: 10, example: true, days: 7,
+    nl: ["Vaste plek voor statiegeld en retouren", "Zet lege flessen en retourpakketten steeds op dezelfde plek in je wagen. Aan het eind van de rit hoef je dan niet te zoeken."],
+    en: ["A fixed spot for empties and returns", "Always put empty bottles and return packages in the same spot in your van. At the end of the trip you don't have to hunt for them."], comments: [] },
+  { id: "s7", cat: "body", by: null, votes: 14, example: true, days: 11,
+    nl: ["Goede inlegzolen in je werkschoenen", "Je loopt een hoop op een shift. Goede inlegzolen in je veiligheidsschoenen maken een groot verschil voor je voeten en knieën."],
+    en: ["Good insoles in your work shoes", "You walk a lot on a shift. Good insoles in your safety shoes make a big difference for your feet and knees."], comments: [] },
+  { id: "s8", cat: "weather", by: null, votes: 9, example: true, days: 20,
+    nl: ["Touchscreen-handschoenen voor koude shifts", "Dunne handschoenen met touchscreen-vingertoppen houden je handen warm, en je kunt de app gewoon blijven bedienen."],
+    en: ["Touchscreen gloves for cold shifts", "Thin gloves with touchscreen fingertips keep your hands warm and still let you use the app."], comments: [] },
+  { id: "s9", cat: "weather", by: null, votes: 8, example: true, days: 13,
+    nl: ["Droge sokken in je tas", "Houd droge sokken en een extra shirt in je tas of kluisje. Na een natte eerste rit maakt dat de tweede een stuk beter."],
+    en: ["Dry socks in your bag", "Keep dry socks and a spare shirt in your bag or locker. After a wet first trip, it makes the second one a lot better."], comments: [] },
+  { id: "s10", cat: "new", by: null, votes: 17, example: true, days: 15,
+    nl: ["Eerst goed, snelheid komt vanzelf", "Focus in je eerste weken op elke stop goed doen. Het tempo komt vanzelf zodra de routine erin zit."],
+    en: ["Accuracy first, speed comes by itself", "In your first weeks, focus on getting every stop right. Speed builds up on its own once the routine is in your hands."], comments: [] }
+];
+
+const KEY = "runner-tips-demo-v2";
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(local)); return true; } catch (e) { return false; } }
+const local = Object.assign({ added: [], voted: [], comments: {}, lang: "nl" }, load());
+const state = { cat: "all", sort: "handy", open: {}, fresh: null };
+const t = () => T[local.lang];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 21h4V9H2v12zm20-11a2 2 0 0 0-2-2h-6.3l1-4.6v-.3c0-.4-.2-.8-.4-1.1L13.2 1 6.6 7.6c-.4.4-.6.9-.6 1.4v10c0 1.1.9 2 2 2h9c.8 0 1.5-.5 1.8-1.2l3-7.1c.1-.2.2-.5.2-.7v-2z"/></svg>';
+
+function allTips() {
+  return SEED.concat(local.added).map(x => {
+    const voted = local.voted.includes(x.id);
+    const txt = x[local.lang] || x.nl || [x.title, x.body];
+    return Object.assign({}, x, { title: txt[0], body: txt[1], voted, total: x.votes + (voted ? 1 : 0),
+      allComments: x.comments.concat(local.comments[x.id] || []) });
+  });
+}
+
+function tipHTML(x, rank) {
+  const L = t();
+  const by = x.example ? `<span class="tag">${L.example}</span>` : (x.by ? L.by + esc(x.by) : L.anon);
+  const open = state.open[x.id];
+  const n = x.allComments.length;
+  const head = `<div class="meta"><span class="cat">${esc(CATS[x.cat][local.lang])}</span><span>·</span><span>${L.ago(x.days)}</span>${x.mine ? `<span class="tag">${L.yours}</span>` : ""}</div><h3>${esc(x.title)}</h3>`;
+  return `<article class="tip${state.fresh === x.id ? " fresh" : ""}">
+    ${rank ? `<div class="toprow"><div class="rank">${rank}</div><div style="display:grid;gap:2px;min-width:0">${head}</div></div>` : head}
+    ${x.photo ? `<img class="photo" src="${x.photo}" alt="">` : ""}
+    <p>${esc(x.body)}</p>
+    <div class="by">${by}</div>
+    <div class="actions">
+      <button class="handy" data-vote="${x.id}" aria-pressed="${x.voted}">${HEART}${L.handyBtn} <span class="n">${x.total}</span></button>
+      <button class="cbtn" data-open="${x.id}" aria-expanded="${!!open}">${n ? L.comments(n) : L.comment}</button>
+    </div>
+    ${open ? `<div class="comments">
+      ${x.allComments.map(c => `<div class="comment"><b>${esc(c.by || L.anon)}</b><br>${esc(c.text)}</div>`).join("")}
+      <form class="cform" data-id="${x.id}"><input id="c-${x.id}" aria-label="${L.addc}" placeholder="${L.addc}" maxlength="200"><button class="btn" type="submit">${L.post}</button></form>
+    </div>` : ""}
+  </article>`;
+}
+
+function setText(id, s) { document.getElementById(id).textContent = s; }
+function render() {
+  const L = t();
+  document.documentElement.lang = local.lang;
+  document.getElementById("l-nl").setAttribute("aria-pressed", local.lang === "nl");
+  document.getElementById("l-en").setAttribute("aria-pressed", local.lang === "en");
+  setText("t-hub", L.hub); setText("t-demo", L.demo); setText("h-top", L.top); setText("t-topsub", L.topsub);
+  setText("t-ctah", L.ctah); setText("t-ctap", L.ctap); setText("cta-btn", L.ctab); setText("h-all", L.all);
+  setText("t-sort", L.sort); setText("t-rulesh", L.rulesh);
+  document.getElementById("fab").setAttribute("aria-label", L.ctab);
+  document.getElementById("rules").innerHTML = L.rules.map(r => `<li>${esc(r)}</li>`).join("");
+  document.getElementById("sort").innerHTML = `<option value="handy"${state.sort === "handy" ? " selected" : ""}>${L.handy}</option><option value="new"${state.sort === "new" ? " selected" : ""}>${L.newest}</option>`;
+  document.getElementById("filters").innerHTML = [["all", L.allcat]].concat(Object.keys(CATS).map(k => [k, CATS[k][local.lang]]))
+    .map(([k, label]) => `<button class="chip" data-cat="${k}" aria-pressed="${state.cat === k}">${esc(label)}</button>`).join("");
+
+  const tips = allTips();
+  const top = tips.slice().sort((a, b) => b.total - a.total).slice(0, 3);
+  document.getElementById("top").innerHTML = top.map((x, i) => tipHTML(x, i + 1)).join("");
+
+  const topIds = top.map(x => x.id);
+  let list = tips.filter(x => (state.cat === "all" || x.cat === state.cat) && (state.cat !== "all" || !topIds.includes(x.id)));
+  list.sort(state.sort === "handy" ? (a, b) => b.total - a.total : (a, b) => a.days - b.days);
+  setText("count", L.tips(list.length));
+  document.getElementById("all").innerHTML = list.length ? list.map(x => tipHTML(x)).join("") : `<div class="empty">${L.empty}</div>`;
+}
+
+document.getElementById("l-nl").onclick = () => { local.lang = "nl"; save(); render(); };
+document.getElementById("l-en").onclick = () => { local.lang = "en"; save(); render(); };
+document.getElementById("sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
+
+document.querySelector(".wrap").addEventListener("click", e => {
+  const v = e.target.closest("[data-vote]");
+  if (v) { const id = v.dataset.vote; local.voted = local.voted.includes(id) ? local.voted.filter(x => x !== id) : local.voted.concat(id); save(); render(); return; }
+  const o = e.target.closest("[data-open]");
+  if (o) { state.open[o.dataset.open] = !state.open[o.dataset.open]; render(); return; }
+  const c = e.target.closest("[data-cat]");
+  if (c) { state.cat = c.dataset.cat; render(); }
+});
+document.querySelector(".wrap").addEventListener("submit", e => {
+  if (!e.target.classList.contains("cform")) return;
+  e.preventDefault();
+  const id = e.target.dataset.id;
+  const text = document.getElementById("c-" + id).value.trim();
+  if (!text) return;
+  local.comments[id] = (local.comments[id] || []).concat({ by: t().you, text });
+  save(); render(); toast(t().cposted);
+});
+
+function toast(msg) {
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = msg; document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+function shrink(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 900, s = Math.min(1, max / Math.max(img.width, img.height));
+        const cv = document.createElement("canvas");
+        cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        resolve(cv.toDataURL("image/jpeg", 0.72));
+      };
+      img.onerror = reject; img.src = r.result;
+    };
+    r.onerror = reject; r.readAsDataURL(file);
+  });
+}
+
+const CAM = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>';
+function openSheet() {
+  const L = t();
+  let photo = null;
+  const bg = document.createElement("div");
+  bg.className = "sheet-bg";
+  bg.innerHTML = `<form class="sheet" id="tipform" aria-label="${L.sheeth}">
+    <h2>${L.sheeth}</h2>
+    <div class="field"><label for="f-cat">${L.fcat}</label><select id="f-cat">${Object.keys(CATS).map(k => `<option value="${k}">${esc(CATS[k][local.lang])}</option>`).join("")}</select></div>
+    <div class="field"><label for="f-title">${L.ftitle}</label><input id="f-title" maxlength="80" placeholder="${L.ftitleph}"></div>
+    <div class="field"><label for="f-body">${L.fbody}</label><textarea id="f-body" rows="4" maxlength="400" placeholder="${L.fbodyph}"></textarea><small>${L.fbodyhint}</small></div>
+    <div class="field"><span style="font-size:13px;font-weight:900">${L.fphoto}</span>
+      <label class="photo-pick" id="pick">${CAM}<span>${L.fphotopick}</span><input type="file" id="f-photo" accept="image/*"></label>
+      <div class="preview" id="preview" hidden></div>
+      <small>${L.fphotohint}</small></div>
+    <div class="field"><label for="f-name">${L.fname}</label><input id="f-name" maxlength="30" placeholder="${L.fnameph}"></div>
+    <label class="check"><input type="checkbox" id="f-ok"> ${L.fok}</label>
+    <div class="err" id="f-err"></div>
+    <div class="row"><button type="button" class="ghost" id="f-cancel">${L.cancel}</button><button type="submit" class="btn">${L.posttip}</button></div>
+  </form>`;
+  document.body.appendChild(bg);
+  const close = () => bg.remove();
+  bg.addEventListener("click", e => { if (e.target === bg) close(); });
+  document.getElementById("f-cancel").onclick = close;
+  const pick = document.getElementById("pick"), prev = document.getElementById("preview");
+  document.getElementById("f-photo").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { photo = await shrink(f); } catch (err) { return; }
+    prev.innerHTML = `<img src="${photo}" alt=""><button type="button" class="ghost" id="f-delphoto">${L.fphotodel}</button>`;
+    prev.hidden = false; pick.hidden = true;
+    document.getElementById("f-delphoto").onclick = () => { photo = null; prev.hidden = true; prev.innerHTML = ""; pick.hidden = false; document.getElementById("f-photo").value = ""; };
+  });
+  document.getElementById("tipform").addEventListener("submit", e => {
+    e.preventDefault();
+    const title = document.getElementById("f-title").value.trim();
+    const body = document.getElementById("f-body").value.trim();
+    const err = document.getElementById("f-err");
+    if (!title || !body) { err.textContent = L.errfill; return; }
+    if (!document.getElementById("f-ok").checked) { err.textContent = L.errok; return; }
+    const tip = { id: "u" + Date.now(), cat: document.getElementById("f-cat").value, title, body, photo,
+      by: document.getElementById("f-name").value.trim() || null, votes: 0, example: false, days: 0, comments: [], mine: true };
+    tip.nl = tip.en = [title, body];
+    local.added.push(tip);
+    let ok = save();
+    if (!ok && photo) { const stored = Object.assign({}, tip, { photo: null }); local.added[local.added.length - 1] = stored; save(); local.added[local.added.length - 1] = tip; }
+    state.cat = "all"; state.sort = "new"; state.fresh = tip.id;
+    close(); render();
+    document.getElementById("h-all").scrollIntoView({ behavior: "smooth" });
+    toast(!ok && photo ? L.tphotomem : L.tposted);
+  });
+}
+document.getElementById("cta-btn").onclick = openSheet;
+document.getElementById("fab").onclick = openSheet;
+
+render();
+</script>

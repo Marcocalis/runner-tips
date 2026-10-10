@@ -1,0 +1,4 @@
+SECRETS.md
+.claude/
+.netlify/
+node_modules/

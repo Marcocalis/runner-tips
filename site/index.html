@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Runner Tips</title>
+<meta name="description" content="Tips van runners, voor runners.">
+<meta name="theme-color" content="#E60000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Runner Tips">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="logo"><span class="logo-mark" aria-hidden="true">RT</span><span>Runner Tips</span></div>
+    <div class="lang" role="group" aria-label="Taal / Language">
+      <button id="l-nl" aria-pressed="true">NL</button>
+      <button id="l-en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-in">
+    <div class="eyebrow" id="hubname"></div>
+    <h1 data-t="heroTitle"></h1>
+    <p data-t="heroSub"></p>
+    <div class="stats" id="stats" aria-live="polite"></div>
+  </div>
+</div>
+
+<main class="sheet-main" id="app">
+  <div class="loading" id="loading"><span class="spinner" aria-hidden="true"></span><span data-t="loading"></span></div>
+</main>
+
+<button class="fab" id="fab" hidden><span aria-hidden="true">+</span><span class="fab-label" data-t="share"></span></button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
