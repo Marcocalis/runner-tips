@@ -32,7 +32,7 @@ const T = {
     reasons: [["notwork", "Werkt niet zo bij ons"], ["unsafe", "Onveilig of tegen de regels"], ["customer", "Bevat klantgegevens"], ["other", "Iets anders"]],
     reportDone: "Bedankt, de tip is gemeld",
     gateTitle: "Welkom bij Runner Tips", gateText: "Open de link uit de WhatsApp-groep, of vul de hubcode in.", gatePh: "Hubcode", gateBtn: "Open", gateErr: "Deze code klopt niet.",
-    modBar: "Moderatormodus: je ziet ook verborgen tips en meldingen.", hide: "Verbergen", unhide: "Terugzetten", clearReports: "Meldingen wissen", hiddenLbl: "Verborgen", reportsLbl: n => n + (n === 1 ? " melding" : " meldingen"),
+    modBar: "Moderatormodus: je ziet ook verborgen tips en meldingen.", modOff: "Bekijk als collega", modOffNote: "Moderatormodus staat uit op dit apparaat. Open je moderatorlink om hem weer aan te zetten.", hide: "Verbergen", unhide: "Terugzetten", clearReports: "Meldingen wissen", hiddenLbl: "Verborgen", reportsLbl: n => n + (n === 1 ? " melding" : " meldingen"),
     preview: "Voorbeeldmodus: nog niet verbonden met de database. Niets wordt opgeslagen.",
     waText: (t, url) => `Handige runner-tip: *${t.title}*\n${t.body}\n\nMeer tips: ${url}`,
     pageShare: url => `Runner Tips: handige trucs van collega's, en deel je eigen tip! ${url}`,
@@ -67,7 +67,7 @@ const T = {
     reasons: [["notwork", "Doesn't work like that here"], ["unsafe", "Unsafe or against the rules"], ["customer", "Contains customer info"], ["other", "Something else"]],
     reportDone: "Thanks, the tip has been reported",
     gateTitle: "Welcome to Runner Tips", gateText: "Open the link from the WhatsApp group, or enter the hub code.", gatePh: "Hub code", gateBtn: "Open", gateErr: "That code isn't right.",
-    modBar: "Moderator mode: you also see hidden tips and reports.", hide: "Hide", unhide: "Restore", clearReports: "Clear reports", hiddenLbl: "Hidden", reportsLbl: n => n + (n === 1 ? " report" : " reports"),
+    modBar: "Moderator mode: you also see hidden tips and reports.", modOff: "View as colleague", modOffNote: "Moderator mode is off on this device. Open your moderator link to turn it back on.", hide: "Hide", unhide: "Restore", clearReports: "Clear reports", hiddenLbl: "Hidden", reportsLbl: n => n + (n === 1 ? " report" : " reports"),
     preview: "Preview mode: not connected to the database yet. Nothing is saved.",
     waText: (t, url) => `Handy runner tip: *${t.title}*\n${t.body}\n\nMore tips: ${url}`,
     pageShare: url => `Runner Tips: handy tricks from colleagues, and share your own! ${url}`,
@@ -108,7 +108,8 @@ const store = {
 };
 const params = new URLSearchParams(location.search);
 if (params.get("c")) store.set("code", params.get("c").trim().toLowerCase());
-if (params.get("admin")) store.set("admin", params.get("admin").trim());
+// ?admin=<key> turns moderator mode on for this browser, ?admin=off turns it off again.
+if (params.get("admin")) store.set("admin", params.get("admin").trim() === "off" ? null : params.get("admin").trim());
 // The code stays in the address bar on purpose: an iPhone home-screen icon saves the current address
 // and has its own storage, so without it the icon would open on the "enter hub code" screen.
 if (!store.get("voter")) store.set("voter", (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ Math.random() * 16 >> c / 4).toString(16))));
@@ -288,7 +289,7 @@ function render() {
 
   app.innerHTML = `
     ${PREVIEW ? `<div class="modbar">${l.preview}</div>` : ""}
-    ${S.isAdmin ? `<div class="modbar">${l.modBar}</div>${statsBlock()}` : ""}
+    ${S.isAdmin ? `<div class="modbar modbar-row"><span>${l.modBar}</span><button class="mini" data-modoff>${l.modOff}</button></div>${statsBlock()}` : ""}
     ${top.length ? `<section class="sec"><div class="sec-head"><div><h2>${l.top}</h2><p>${l.topSub}</p></div></div>
       <div class="list">${top.map((t, i) => tipCard(t, i + 1)).join("")}</div></section>` : ""}
     <section class="cta"><h2>${l.ctaTitle}</h2><p>${l.ctaText}</p><button class="btn" data-share>${l.share}</button></section>
@@ -468,6 +469,7 @@ document.addEventListener("click", async e => {
   if ((b = g("[data-cat]"))) { S.cat = S.cat === b.dataset.cat ? "all" : b.dataset.cat; render(); return; }
   if ((b = g("[data-sort]"))) { S.sort = b.dataset.sort; render(); return; }
   if ((b = g("[data-hide]"))) { try { await rpc("admin_set_hidden", { p_admin: S.admin, p_kind: "tip", p_id: b.dataset.hide, p_hidden: b.dataset.to === "true" }); await refresh(); } catch (ex) { toast(L().netErr); } return; }
+  if (g("[data-modoff]")) { store.set("admin", null); S.admin = null; history.replaceState(null, "", location.pathname); await refresh(); toast(L().modOffNote); return; }
   if ((b = g("[data-delc]"))) { if (!confirm(L().delConfirm)) return; try { await rpc("delete_comment", { p_code: S.code, p_comment: b.dataset.delc, p_voter: S.voter }); await refresh(); toast(L().commentDeleted); } catch (ex) { toast(L().netErr); } return; }
   if ((b = g("[data-hidec]"))) { try { await rpc("admin_set_hidden", { p_admin: S.admin, p_kind: "comment", p_id: b.dataset.hidec, p_hidden: b.dataset.to === "true" }); await refresh(); } catch (ex) { toast(L().netErr); } return; }
   if ((b = g("[data-clear]"))) { try { await rpc("admin_clear_reports", { p_admin: S.admin, p_tip: b.dataset.clear }); await refresh(); } catch (ex) { toast(L().netErr); } return; }
