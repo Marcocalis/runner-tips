@@ -18,7 +18,8 @@ const T = {
     by: "door", anon: "Anoniem", isNew: "Nieuw",
     addComment: "Schrijf een reactie…", yourName: "Je naam (optioneel)", post: "Plaats",
     rulesTitle: "Huisregels",
-    rules: ["Geen namen, adressen of foto's van klanten, huisnummers of kentekens.", "Tips vervangen nooit de officiële regels of veiligheidsinstructies. Botst het, dan geldt de officiële regel.", "Houd het vriendelijk. Moderators kunnen tips en reacties verbergen."],
+    rules: ["Geen namen, adressen of foto's van klanten, huisnummers of kentekens.", "Tips vervangen nooit de officiële regels of veiligheidsinstructies. Botst het, dan geldt de officiële regel.", "Houd het vriendelijk. Moderators kunnen tips en reacties verbergen.", "De site telt anoniem hoeveel bezoekers er zijn. Er wordt niets over jou opgeslagen."],
+    stToday: "vandaag", stWeek: "deze week", stTotal: "bezoekers totaal", stViews: "keer bekeken", stSpark: "Bezoekers per dag, laatste 2 weken. Alleen jij ziet dit.",
     sharePage: "Stuur deze pagina door", homeHint: "Tip: zet deze pagina op je beginscherm. iPhone: Deel-knop, dan \"Zet op beginscherm\". Android: menu, dan \"Toevoegen aan startscherm\".",
     sheetTitle: "Deel een tip", fCat: "Waar gaat het over?", fTitle: "Korte titel", fTitlePh: "Bijv. deksels laag in het frame",
     fBody: "Jouw tip", fBodyPh: "Wat doe je, en waarom helpt het?", fBodyHint: "Een paar zinnen is perfect.",
@@ -52,7 +53,8 @@ const T = {
     by: "by", anon: "Anonymous", isNew: "New",
     addComment: "Write a comment…", yourName: "Your name (optional)", post: "Post",
     rulesTitle: "House rules",
-    rules: ["No customer names, addresses or photos of customers, house numbers or licence plates.", "Tips never replace official rules or safety instructions. If they clash, the official rule wins.", "Keep it friendly. Moderators can hide tips and comments."],
+    rules: ["No customer names, addresses or photos of customers, house numbers or licence plates.", "Tips never replace official rules or safety instructions. If they clash, the official rule wins.", "Keep it friendly. Moderators can hide tips and comments.", "The site anonymously counts how many people visit. Nothing about you is stored."],
+    stToday: "today", stWeek: "this week", stTotal: "visitors in total", stViews: "page views", stSpark: "Visitors per day, last 2 weeks. Only you can see this.",
     sharePage: "Send this page to someone", homeHint: "Tip: add this page to your home screen. iPhone: Share button, then \"Add to Home Screen\". Android: menu, then \"Add to Home screen\".",
     sheetTitle: "Share a tip", fCat: "What's it about?", fTitle: "Short title", fTitlePh: "E.g. keep the lids low in the frame",
     fBody: "Your tip", fBodyPh: "What do you do, and why does it help?", fBodyHint: "A few sentences is perfect.",
@@ -164,6 +166,8 @@ if (!PREVIEW) {
       case "report_tip": find(a.p_tip).reports.push({ voter: a.p_voter, reason: a.p_reason }); return null;
       case "admin_set_hidden": { if (a.p_kind === "tip") find(a.p_id).hidden = a.p_hidden; else db.forEach(t => t.comments.forEach(c => { if (c.id === a.p_id) c.hidden = a.p_hidden; })); return null; }
       case "admin_clear_reports": find(a.p_tip).reports = []; return null;
+      case "log_visit": return null;
+      case "get_stats": return { visitors_today: 4, visitors_week: 17, visitors_total: 23, views_total: 61, days: Array.from({ length: 7 }, (_, i) => ({ day: "2026-10-0" + (i + 1), visitors: [3, 5, 2, 8, 6, 9, 4][i], views: 10 })) };
     }
   };
 }
@@ -172,7 +176,25 @@ async function loadTips() {
   const res = await rpc("get_tips", { p_code: S.code, p_voter: S.voter, p_admin: S.admin || null });
   S.tips = res.tips || [];
   S.isAdmin = !!res.admin;
+  if (S.isAdmin) { try { S.stats = await rpc("get_stats", { p_admin: S.admin }); } catch (e) { S.stats = null; } }
   S.loaded = true;
+}
+
+// Anonymous visit count (per device per day), only shown in moderator mode. Never blocks the page.
+function logVisit() { rpc("log_visit", { p_code: S.code, p_voter: S.voter }).catch(() => {}); }
+
+function statsBlock() {
+  const st = S.stats, l = L();
+  if (!st) return "";
+  const days = st.days || [];
+  const max = Math.max(1, ...days.map(d => d.visitors));
+  return `<div class="stats-card"><div class="stats-row">
+      <div><b>${st.visitors_today}</b><span>${l.stToday}</span></div>
+      <div><b>${st.visitors_week}</b><span>${l.stWeek}</span></div>
+      <div><b>${st.visitors_total}</b><span>${l.stTotal}</span></div>
+      <div><b>${st.views_total}</b><span>${l.stViews}</span></div></div>
+    ${days.length ? `<div class="spark" aria-hidden="true">${days.map(d => `<i style="height:${Math.round(d.visitors / max * 100)}%" title="${d.day}: ${d.visitors}"></i>`).join("")}</div><small>${l.stSpark}</small>` : ""}
+  </div>`;
 }
 
 // ---------- Rendering ----------
@@ -256,7 +278,7 @@ function render() {
 
   app.innerHTML = `
     ${PREVIEW ? `<div class="modbar">${l.preview}</div>` : ""}
-    ${S.isAdmin ? `<div class="modbar">${l.modBar}</div>` : ""}
+    ${S.isAdmin ? `<div class="modbar">${l.modBar}</div>${statsBlock()}` : ""}
     ${top.length ? `<section class="sec"><div class="sec-head"><div><h2>${l.top}</h2><p>${l.topSub}</p></div></div>
       <div class="list">${top.map((t, i) => tipCard(t, i + 1)).join("")}</div></section>` : ""}
     <section class="cta"><h2>${l.ctaTitle}</h2><p>${l.ctaText}</p><button class="btn" data-share>${l.share}</button></section>
@@ -465,6 +487,7 @@ document.addEventListener("submit", async e => {
 renderStatic();
 (async () => {
   if (!S.code) { $("loading").hidden = true; render(); return; }
+  if (!S.admin) logVisit();
   try { await loadTips(); render(); }
   catch (e) {
     if (String(e.message || e).includes("bad_code")) { S.code = null; store.set("code", null); render(); }

@@ -103,6 +103,15 @@ button { font-family: inherit; }
 .mini { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; }
 .modbar { background: var(--ink); color: var(--surface); border-radius: 14px; padding: 10px 14px; font-size: 14px; font-weight: 700; }
 
+.stats-card { background: var(--surface); border-radius: 14px; padding: 14px; display: grid; gap: 10px; box-shadow: var(--shadow); }
+.stats-card small { color: var(--muted); font-size: 12px; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stats-row div { display: grid; gap: 2px; min-width: 0; }
+.stats-row b { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stats-row span { font-size: 12px; color: var(--muted); font-weight: 700; }
+.spark { display: flex; align-items: flex-end; gap: 4px; height: 48px; border-bottom: 1px solid var(--line); }
+.spark i { flex: 1; background: var(--red); border-radius: 3px 3px 0 0; min-height: 3px; }
+
 /* CTA */
 .cta { background: var(--ink); color: var(--surface); border-radius: 24px; padding: 22px; display: grid; gap: 10px; position: relative; overflow: hidden; }
 .cta::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: var(--red); opacity: .9; }
