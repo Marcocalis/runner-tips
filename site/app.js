@@ -176,6 +176,7 @@ async function loadTips() {
   const res = await rpc("get_tips", { p_code: S.code, p_voter: S.voter, p_admin: S.admin || null });
   S.tips = res.tips || [];
   S.isAdmin = !!res.admin;
+  S.contributors = res.contributors;
   if (S.isAdmin) { try { S.stats = await rpc("get_stats", { p_admin: S.admin }); } catch (e) { S.stats = null; } }
   S.loaded = true;
 }
@@ -260,7 +261,9 @@ function render() {
   const likes = tips.reduce((n, t) => n + t.votes, 0);
   const named = new Map();
   tips.filter(t => !t.hidden && t.author).forEach(t => { const k = t.author.trim(); named.set(k, (named.get(k) || 0) + 1); });
-  $("stats").innerHTML = `<span class="stat">${l.statTips(tips.filter(t => !t.hidden).length)}</span><span class="stat">${l.statLikes(likes)}</span>${named.size ? `<span class="stat">${l.statPeople(named.size)}</span>` : ""}`;
+  // The database counts anonymous contributors too; fall back to named ones if it does not send a count.
+  const people_n = S.contributors ?? named.size;
+  $("stats").innerHTML = `<span class="stat">${l.statTips(tips.filter(t => !t.hidden).length)}</span><span class="stat">${l.statLikes(likes)}</span>${people_n ? `<span class="stat">${l.statPeople(people_n)}</span>` : ""}`;
 
   const visible = tips.filter(t => !t.hidden || S.isAdmin);
   // Likes decide the top 3. "pin" (set in the database) only breaks ties, so it sets the starting order
@@ -411,7 +414,9 @@ function openAdd() {
     if (!root.querySelector("#f-ok").checked) { err.textContent = l.errOk; return; }
     const btn = root.querySelector("#f-submit"); btn.disabled = true; btn.textContent = l.posting;
     try {
-      const id = await rpc("add_tip", { p_code: S.code, p_category: cat, p_title: title, p_body: body, p_author: name || null, p_photo: photo });
+      const args = { p_code: S.code, p_category: cat, p_title: title, p_body: body, p_author: name || null, p_photo: photo };
+      // Older database versions do not take p_voter yet; retry without it.
+      const id = await rpc("add_tip", { ...args, p_voter: S.voter }).catch(() => rpc("add_tip", args));
       S.name = name; store.set("name", name || null);
       if (photo) S.photos.set(id, photo);
       S.fresh = id; S.cat = "all"; S.sort = "new";
