@@ -110,7 +110,9 @@ button { font-family: inherit; }
 .stats-row b { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .stats-row span { font-size: 12px; color: var(--muted); font-weight: 700; }
 .spark { display: flex; align-items: flex-end; gap: 4px; height: 48px; border-bottom: 1px solid var(--line); }
-.spark i { flex: 1; background: var(--red); border-radius: 3px 3px 0 0; min-height: 3px; }
+.spark i { flex: 1; background: var(--red); border-radius: 3px 3px 0 0; min-height: 2px; }
+.spark i.zero { background: var(--line); }
+.spark-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-weight: 700; margin-top: -4px; }
 
 /* CTA */
 .cta { background: var(--ink); color: var(--surface); border-radius: 24px; padding: 22px; display: grid; gap: 10px; position: relative; overflow: hidden; }

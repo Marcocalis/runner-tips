@@ -19,7 +19,7 @@ const T = {
     addComment: "Schrijf een reactie…", yourName: "Je naam (optioneel)", post: "Plaats",
     rulesTitle: "Huisregels",
     rules: ["Geen namen, adressen of foto's van klanten, huisnummers of kentekens.", "Tips vervangen nooit de officiële regels of veiligheidsinstructies. Botst het, dan geldt de officiële regel.", "Houd het vriendelijk. Moderators kunnen tips en reacties verbergen.", "De site telt anoniem hoeveel bezoekers er zijn. Er wordt niets over jou opgeslagen."],
-    stToday: "vandaag", stWeek: "deze week", stTotal: "bezoekers totaal", stViews: "keer bekeken", stSpark: "Bezoekers per dag, laatste 2 weken. Alleen jij ziet dit.",
+    stToday: "mensen vandaag", stWeek: "mensen, laatste 7 dagen", stTotal: "mensen in totaal", stViews: "keer geopend", stSpark: "Mensen per dag, laatste 2 weken. Alleen jij ziet dit.", stSince: d => `Telt sinds ${d}. Bezoeken van daarvoor zijn niet bijgehouden.`, stViewsNote: "\"Keer geopend\" telt ook als iemand later terugkomt.", locale: "nl-NL",
     sharePage: "Stuur deze pagina door", homeHint: "Tip: zet deze pagina op je beginscherm. iPhone: Deel-knop, dan \"Zet op beginscherm\". Android: menu, dan \"Toevoegen aan startscherm\".",
     sheetTitle: "Deel een tip", fCat: "Waar gaat het over?", fTitle: "Korte titel", fTitlePh: "Bijv. deksels laag in het frame",
     fBody: "Jouw tip", fBodyPh: "Wat doe je, en waarom helpt het?", fBodyHint: "Een paar zinnen is perfect.",
@@ -54,7 +54,7 @@ const T = {
     addComment: "Write a comment…", yourName: "Your name (optional)", post: "Post",
     rulesTitle: "House rules",
     rules: ["No customer names, addresses or photos of customers, house numbers or licence plates.", "Tips never replace official rules or safety instructions. If they clash, the official rule wins.", "Keep it friendly. Moderators can hide tips and comments.", "The site anonymously counts how many people visit. Nothing about you is stored."],
-    stToday: "today", stWeek: "this week", stTotal: "visitors in total", stViews: "page views", stSpark: "Visitors per day, last 2 weeks. Only you can see this.",
+    stToday: "people today", stWeek: "people, last 7 days", stTotal: "people in total", stViews: "times opened", stSpark: "People per day, last 2 weeks. Only you can see this.", stSince: d => `Counting since ${d}. Earlier visits were not tracked.`, stViewsNote: "\"Times opened\" also counts people coming back later.", locale: "en-GB",
     sharePage: "Send this page to someone", homeHint: "Tip: add this page to your home screen. iPhone: Share button, then \"Add to Home Screen\". Android: menu, then \"Add to Home screen\".",
     sheetTitle: "Share a tip", fCat: "What's it about?", fTitle: "Short title", fTitlePh: "E.g. keep the lids low in the frame",
     fBody: "Your tip", fBodyPh: "What do you do, and why does it help?", fBodyHint: "A few sentences is perfect.",
@@ -187,17 +187,24 @@ function logVisit() { rpc("log_visit", { p_code: S.code, p_voter: S.voter }).cat
 function statsBlock() {
   const st = S.stats, l = L();
   if (!st) return "";
-  const days = st.days || [];
-  const max = Math.max(1, ...days.map(d => d.visitors));
+  // Always 14 slots (oldest left, today right) so one day of data doesn't fill the whole chart.
+  const byDay = new Map((st.days || []).map(d => [d.day, d]));
+  const fmt = d => d.toLocaleDateString(l.locale, { day: "numeric", month: "short" });
+  const key = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  const slots = Array.from({ length: 14 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 13 + i); return { date: d, v: byDay.get(key(d))?.visitors || 0 }; });
+  const max = Math.max(1, ...slots.map(s => s.v));
+  const first = (st.days || [])[0];
+  const since = first && slots.findIndex(s => key(s.date) === first.day) > 0 ? fmt(new Date(first.day + "T12:00:00")) : null;
   return `<div class="stats-card"><div class="stats-row">
       <div><b>${st.visitors_today}</b><span>${l.stToday}</span></div>
       <div><b>${st.visitors_week}</b><span>${l.stWeek}</span></div>
       <div><b>${st.visitors_total}</b><span>${l.stTotal}</span></div>
       <div><b>${st.views_total}</b><span>${l.stViews}</span></div></div>
-    ${days.length ? `<div class="spark" aria-hidden="true">${days.map(d => `<i style="height:${Math.round(d.visitors / max * 100)}%" title="${d.day}: ${d.visitors}"></i>`).join("")}</div><small>${l.stSpark}</small>` : ""}
+    <div class="spark" aria-hidden="true">${slots.map(s => `<i class="${s.v ? "" : "zero"}" style="height:${s.v ? Math.max(6, Math.round(s.v / max * 100)) : 3}%" title="${fmt(s.date)}: ${s.v}"></i>`).join("")}</div>
+    <div class="spark-axis"><span>${fmt(slots[0].date)}</span><span>${fmt(slots[13].date)}</span></div>
+    <small>${l.stSpark} ${since ? l.stSince(since) + " " : ""}${l.stViewsNote}</small>
   </div>`;
 }
-
 // ---------- Rendering ----------
 function sortedByHandy(list) { return list.slice().sort((a, b) => b.votes - a.votes || b.created_at.localeCompare(a.created_at)); }
 
